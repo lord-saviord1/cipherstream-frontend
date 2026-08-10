@@ -3,19 +3,20 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CipherStream — Watch Test</title>
+<title>CipherStream</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
 </head>
 <body>
-  <header>
-    <h1>CipherStream<span>.</span></h1>
-    <p class="tag">watch-loop test harness — not the real UI</p>
+  <header class="topbar">
+    <h1 class="logo">CIPHER<span>STREAM</span></h1>
     <div id="authStatus" class="pill">not signed in</div>
   </header>
 
-  <main>
-    <section id="authPanel" class="panel">
+  <main id="authView" class="auth-view">
+    <div class="auth-card">
       <h2>Sign up / Log in</h2>
       <form id="signupForm">
         <input type="text" id="su-name" placeholder="Name" required />
@@ -26,22 +27,42 @@
       <form id="loginForm">
         <input type="email" id="li-email" placeholder="Email" required />
         <input type="password" id="li-password" placeholder="Password" required />
-        <button type="submit">Log in</button>
+        <button type="submit" class="secondary">Log in</button>
       </form>
       <p id="authMsg" class="msg"></p>
+    </div>
+  </main>
+
+  <main id="appView" class="app-view hidden">
+
+    <section class="section live-section">
+      <div class="section-head">
+        <h2>Live TV</h2>
+        <span class="section-sub">on air now — tap a number to watch</span>
+      </div>
+      <div id="liveGrid" class="live-grid"></div>
     </section>
 
-    <section id="channelsPanel" class="panel hidden">
-      <h2>Channels</h2>
-      <div id="channelList" class="channel-list"></div>
+    <section class="section ondemand-section">
+      <div class="section-head">
+        <h2>On Demand</h2>
+        <span class="section-sub">watch anytime</span>
+      </div>
+      <div id="ondemandRows"></div>
     </section>
 
-    <section id="playerPanel" class="panel hidden">
-      <h2 id="nowPlaying">—</h2>
+  </main>
+
+  <div id="playerOverlay" class="player-overlay hidden">
+    <div class="player-box">
+      <div class="player-topbar">
+        <span id="nowPlaying">—</span>
+        <button id="closePlayer" class="close-btn">✕</button>
+      </div>
       <video id="video" controls autoplay muted playsinline></video>
       <p id="playerMsg" class="msg"></p>
-    </section>
-  </main>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

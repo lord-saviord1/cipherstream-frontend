@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CipherStream — Watch Test</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>CipherStream<span>.</span></h1>
+    <p class="tag">watch-loop test harness — not the real UI</p>
+    <div id="authStatus" class="pill">not signed in</div>
+  </header>
+
+  <main>
+    <section id="authPanel" class="panel">
+      <h2>Sign up / Log in</h2>
+      <form id="signupForm">
+        <input type="text" id="su-name" placeholder="Name" required />
+        <input type="email" id="su-email" placeholder="Email" required />
+        <input type="password" id="su-password" placeholder="Password" required />
+        <button type="submit">Sign up</button>
+      </form>
+      <form id="loginForm">
+        <input type="email" id="li-email" placeholder="Email" required />
+        <input type="password" id="li-password" placeholder="Password" required />
+        <button type="submit">Log in</button>
+      </form>
+      <p id="authMsg" class="msg"></p>
+    </section>
+
+    <section id="channelsPanel" class="panel hidden">
+      <h2>Channels</h2>
+      <div id="channelList" class="channel-list"></div>
+    </section>
+
+    <section id="playerPanel" class="panel hidden">
+      <h2 id="nowPlaying">—</h2>
+      <video id="video" controls autoplay muted playsinline></video>
+      <p id="playerMsg" class="msg"></p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

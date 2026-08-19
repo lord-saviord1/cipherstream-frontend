@@ -12,19 +12,36 @@ const playerOverlay = document.getElementById("playerOverlay");
 const video = document.getElementById("video");
 const nowPlaying = document.getElementById("nowPlaying");
 const playerMsg = document.getElementById("playerMsg");
+const logoutBtn = document.getElementById("logoutBtn");
+const playOverlayBtn = document.getElementById("playOverlayBtn");
+const loadingSpinner = document.getElementById("loadingSpinner");
 
 function setSignedIn(isSignedIn) {
   authStatus.textContent = isSignedIn ? "signed in" : "not signed in";
   authStatus.classList.toggle("on", isSignedIn);
   authView.classList.toggle("hidden", isSignedIn);
   appView.classList.toggle("hidden", !isSignedIn);
+  logoutBtn.classList.toggle("hidden", !isSignedIn);
 }
+
+function logout() {
+  token = null;
+  localStorage.removeItem("cs_token");
+  setSignedIn(false);
+}
+logoutBtn.addEventListener("click", logout);
 
 async function api(path, opts = {}) {
   const headers = { "Content-Type": "application/json", ...(opts.headers || {}) };
   if (token) headers.Authorization = `Bearer ${token}`;
   const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401) {
+    // Expired or invalid token — clear it and send the user back to sign in
+    // instead of leaving them stuck on a confusing error.
+    logout();
+    throw new Error("Your session expired — please sign in again.");
+  }
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
   return data;
 }
@@ -120,15 +137,19 @@ function renderOndemand(channels) {
   });
 }
 
+let hlsInstance = null;
+
 async function playChannel(id, name) {
   playerOverlay.classList.remove("hidden");
-  playerMsg.textContent = "fetching stream...";
+  playerMsg.textContent = "";
   nowPlaying.textContent = name;
+  playOverlayBtn.classList.add("hidden");
+  loadingSpinner.classList.remove("hidden");
   try {
     const data = await api(`/channels/${id}/stream`);
-    playerMsg.textContent = "";
     loadIntoPlayer(data.streamUrl);
   } catch (err) {
+    loadingSpinner.classList.add("hidden");
     playerMsg.textContent = err.message;
   }
 }
@@ -137,18 +158,54 @@ document.getElementById("closePlayer").addEventListener("click", () => {
   video.pause();
   video.removeAttribute("src");
   video.load();
+  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
   playerOverlay.classList.add("hidden");
+  playOverlayBtn.classList.add("hidden");
+  loadingSpinner.classList.add("hidden");
+});
+
+playOverlayBtn.addEventListener("click", () => {
+  playOverlayBtn.classList.add("hidden");
+  video.play().catch((err) => {
+    playerMsg.textContent = "Couldn't start playback: " + err.message;
+  });
 });
 
 function loadIntoPlayer(url) {
+  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+
+  // No autoplay — mobile browsers block or half-block it (audio-only being
+  // a common symptom). Instead we show a tap-to-play button once the
+  // stream's actually ready, which works reliably everywhere.
+  const showPlayButton = () => {
+    loadingSpinner.classList.add("hidden");
+    playOverlayBtn.classList.remove("hidden");
+  };
+
+  const showError = (msg) => {
+    loadingSpinner.classList.add("hidden");
+    playOverlayBtn.classList.add("hidden");
+    playerMsg.textContent = msg;
+  };
+
   if (Hls.isSupported()) {
     const hls = new Hls();
+    hlsInstance = hls;
     hls.loadSource(url);
     hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, showPlayButton);
+    hls.on(Hls.Events.ERROR, (event, data) => {
+      if (data.fatal) {
+        showError("This stream isn't playable right now (network or source issue).");
+      }
+    });
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    // Safari's native HLS support
     video.src = url;
+    video.addEventListener("loadedmetadata", showPlayButton, { once: true });
+    video.addEventListener("error", () => showError("This stream isn't playable right now."), { once: true });
   } else {
-    playerMsg.textContent = "This browser can't play HLS streams.";
+    showError("This browser can't play HLS streams.");
   }
 }
 

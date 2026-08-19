@@ -12,7 +12,10 @@
 <body>
   <header class="topbar">
     <h1 class="logo">CIPHER<span>STREAM</span></h1>
-    <div id="authStatus" class="pill">not signed in</div>
+    <div class="topbar-right">
+      <div id="authStatus" class="pill">not signed in</div>
+      <button id="logoutBtn" class="logout-btn hidden">Log out</button>
+    </div>
   </header>
 
   <main id="authView" class="auth-view">
@@ -59,7 +62,13 @@
         <span id="nowPlaying">—</span>
         <button id="closePlayer" class="close-btn">✕</button>
       </div>
-      <video id="video" controls autoplay muted playsinline></video>
+      <div class="video-wrap">
+        <video id="video" controls playsinline></video>
+        <div id="playOverlayBtn" class="play-overlay-btn hidden">
+          <div class="play-triangle"></div>
+        </div>
+        <div id="loadingSpinner" class="loading-spinner hidden"></div>
+      </div>
       <p id="playerMsg" class="msg"></p>
     </div>
   </div>
